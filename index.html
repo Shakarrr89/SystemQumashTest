@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07111f">
+<meta name="description" content="WADE Campaign Refund Calculator">
+<title>WADE — Campaign Refund Calculator</title>
+<style>
+:root{--bg:#07111f;--panel:#0d1b2b;--panel2:#101f31;--line:#22384e;--cyan:#08c7f7;--text:#f4f8fc;--muted:#91a1b5;--danger:#ff6b6b;--success:#16d7a0;--shadow:0 18px 50px rgba(0,0,0,.22)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+body{background:radial-gradient(circle at 10% 0%,rgba(8,199,247,.12),transparent 30%),radial-gradient(circle at 95% 10%,rgba(8,199,247,.07),transparent 25%),var(--bg)}
+button,input{font:inherit}
+.app{width:min(1180px,100%);margin:auto;padding:20px 18px 34px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:4px 2px 20px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{width:42px;height:42px;object-fit:contain;border-radius:50%;background:#fff;padding:4px;border:1px solid #dce4ec;flex:0 0 42px}
+.brand-copy h1{font-size:20px;line-height:1.15;margin:0;font-weight:850;letter-spacing:.1px}
+.brand-copy p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.badge{border:1px solid rgba(8,199,247,.35);color:#8edff6;background:rgba(8,199,247,.07);padding:8px 11px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}
+.shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.card{background:linear-gradient(145deg,rgba(15,31,48,.98),rgba(8,20,33,.98));border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.card-head{display:flex;align-items:center;gap:10px;padding:17px 18px;border-bottom:1px solid var(--line)}
+.icon{width:30px;height:30px;display:grid;place-items:center;border:1px solid rgba(8,199,247,.35);border-radius:8px;background:rgba(8,199,247,.06);color:var(--cyan);font-weight:900}
+.card-head h2{font-size:14px;margin:0;font-weight:850;letter-spacing:.5px}
+.card-head span{margin-left:auto;color:#6f8398;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.7px}
+.body{padding:18px}
+.form{display:grid;gap:12px}
+.field{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:14px;align-items:center;padding:4px 0}
+.label strong{display:block;font-size:13px;margin-bottom:4px}
+.label small{display:block;color:var(--muted);font-size:11px;line-height:1.4}
+.input-wrap{position:relative}
+.input-wrap input{width:100%;height:46px;border:1px solid #2a4056;border-radius:9px;background:#091625;color:#fff;padding:0 52px 0 13px;outline:none;font-size:15px;font-weight:750}
+.input-wrap input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(8,199,247,.1)}
+.unit{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:#8498ac;font-size:11px;font-weight:800;pointer-events:none}
+.actions{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:6px}
+.btn{height:46px;border:0;border-radius:9px;cursor:pointer;font-weight:900;font-size:13px}
+.primary{background:linear-gradient(90deg,#08bce9,#08c7f7);color:#03121d}
+.secondary{padding:0 16px;background:#0a1726;color:#b7c5d4;border:1px solid #2a4056}
+.btn:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.result-list{display:grid;gap:0}
+.row{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid rgba(45,66,86,.72);font-size:12px}
+.row:last-child{border-bottom:0}
+.row .value{font-weight:850;text-align:right;white-space:nowrap}
+.row.accent .value{color:var(--cyan)}
+.row small{display:block;color:#718298;margin-top:3px;font-size:10px;line-height:1.35}
+.final{margin-top:15px;border:1px solid rgba(8,199,247,.65);border-radius:12px;padding:15px 16px;background:rgba(8,199,247,.045)}
+.final-label{color:var(--cyan);font-size:10px;font-weight:900;letter-spacing:1px}
+.final-amount{font-size:31px;font-weight:950;margin-top:3px;letter-spacing:.2px}
+.final-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.message{display:none;margin-top:12px;padding:10px 12px;border-radius:8px;font-size:11px;line-height:1.4}
+.error{background:rgba(255,70,70,.08);border:1px solid rgba(255,70,70,.3);color:#ff9999}
+.ok{background:rgba(22,215,160,.08);border:1px solid rgba(22,215,160,.3);color:#73e6c2}
+.note{margin-top:14px;padding-top:13px;border-top:1px solid var(--line);color:#718298;font-size:10px;line-height:1.5}
+.footer{padding:15px 3px 0;color:#61758b;font-size:10px;text-align:center}
+.footer strong{color:#79dff6}
+@media(max-width:780px){.shell{grid-template-columns:1fr}.field{grid-template-columns:1fr;gap:7px}.actions{grid-template-columns:1fr}.secondary{height:42px}.badge{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand">
+    <img class="logo" src="data:image/png;base64,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" alt="WADE">
+    <div class="brand-copy"><h1>Campaign Refund Calculator</h1><p>Internal agent tool · Campaign compensation</p></div>
+  </div>
+  <div class="badge">OFFLINE · GITHUB PAGES READY</div>
+</header>
+<main class="shell">
+<section class="card">
+  <div class="card-head"><div class="icon">✎</div><h2>INPUT DETAILS</h2><span>Required</span></div>
+  <div class="body">
+    <div class="form">
+      <div class="field"><div class="label"><strong>Full Items Price (IQD)</strong><small>Total original price of all items in the order</small></div><div class="input-wrap"><input id="total" type="number" min="0" step="1000" placeholder="32000" inputmode="numeric" autocomplete="off"><span class="unit">IQD</span></div></div>
+      <div class="field"><div class="label"><strong>Maximum Discount (IQD)</strong><small>Maximum amount the campaign can discount</small></div><div class="input-wrap"><input id="maxDiscount" type="number" min="0" step="1000" placeholder="8000" inputmode="numeric" autocomplete="off"><span class="unit">IQD</span></div></div>
+      <div class="field"><div class="label"><strong>Item Price to be Refunded (IQD)</strong><small>Original price of the missing, wrong, or damaged item</small></div><div class="input-wrap"><input id="missing" type="number" min="0" step="1000" placeholder="2500" inputmode="numeric" autocomplete="off"><span class="unit">IQD</span></div></div>
+      <div id="error" class="message error" role="alert"></div>
+      <div id="ok" class="message ok" role="status">Refund calculated successfully.</div>
+      <div class="actions"><button class="btn primary" id="calculateBtn" type="button">▣ &nbsp; CALCULATE REFUND</button><button class="btn secondary" id="resetBtn" type="button">Reset</button></div>
+    </div>
+  </div>
+</section>
+<section class="card">
+  <div class="card-head"><div class="icon">⌁</div><h2>CALCULATION RESULT</h2><span>Policy formula</span></div>
+  <div class="body">
+    <div class="result-list">
+      <div class="row"><span>Full Items Price</span><span id="rTotal" class="value">—</span></div>
+      <div class="row"><span>Maximum Discount</span><span id="rMax" class="value">—</span></div>
+      <div class="row accent"><span>Effective Discount Percentage<small>Calculated from the actual campaign discount</small></span><span id="rFinalRate" class="value">—</span></div>
+      <div class="row accent"><span>Actual Campaign Discount Amount<small>Limited by the maximum discount</small></span><span id="rActual" class="value">—</span></div>
+      <div class="row"><span>Item Price to be Refunded</span><span id="rMissing" class="value">—</span></div>
+      <div class="row accent"><span>Discount Allocated to Item<small id="rAllocationFormula"></small></span><span id="rAllocated" class="value">—</span></div>
+      <div class="row"><span>Refund Before Rounding</span><span id="rBefore" class="value">—</span></div>
+    </div>
+    <div class="final"><div class="final-label">FINAL REFUND AMOUNT</div><div id="refund" class="final-amount">—</div><div class="final-sub">Amount to refund to customer</div></div>
+    <div class="note">This page is self-contained and works offline. No external libraries, APIs, imports, exports, or server are required.</div>
+  </div>
+</section>
+</main>
+<div class="footer"><strong>WADE</strong> · Campaign Refund Calculator · Single-file static app</div>
+</div>
+<script>
+function money(value){return Math.round(value).toLocaleString('en-US')+' IQD';}
+const $=id=>document.getElementById(id);
+function showError(message){$('error').textContent=message;$('error').style.display='block';$('ok').style.display='none';}
+function clearMessages(){$('error').style.display='none';$('ok').style.display='none';}
+function calculate(){
+ const total=parseFloat($('total').value), maxDiscount=parseFloat($('maxDiscount').value), missing=parseFloat($('missing').value);
+ clearMessages();
+ if(!Number.isFinite(total)||total<=0) return showError('Please enter a valid Full Items Price.');
+ if(!Number.isFinite(maxDiscount)||maxDiscount<0) return showError('Please enter a valid Maximum Discount.');
+ if(!Number.isFinite(missing)||missing<=0) return showError('Please enter a valid Item Price to be Refunded.');
+ if(missing>total) return showError('Item Price to be Refunded cannot be greater than Full Items Price.');
+ if(maxDiscount>total) return showError('Maximum Discount cannot be greater than Full Items Price.');
+ // Policy calculation preserved exactly: actual discount = maximum discount;
+ // allocate it proportionally to the missing item; round the final refund to nearest 25 IQD.
+ const actualDiscount=maxDiscount;
+ const effectiveDiscountPercentage=(actualDiscount/total)*100;
+ const discountAllocatedToItem=(missing/total)*actualDiscount;
+ const refundBeforeRounding=missing-discountAllocatedToItem;
+ const refund=Math.round(refundBeforeRounding/25)*25;
+ $('rTotal').textContent=money(total); $('rMax').textContent=money(maxDiscount);
+ $('rFinalRate').textContent=effectiveDiscountPercentage.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2})+'%';
+ $('rActual').textContent=money(actualDiscount); $('rMissing').textContent=money(missing); $('rAllocated').textContent=money(discountAllocatedToItem);
+ $('rAllocationFormula').textContent='('+missing.toLocaleString('en-US')+' ÷ '+total.toLocaleString('en-US')+') × '+money(actualDiscount);
+ $('rBefore').textContent=refundBeforeRounding.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' IQD';
+ $('refund').textContent=money(refund); $('ok').style.display='block';
+}
+function resetAll(){['total','maxDiscount','missing'].forEach(id=>$(id).value='');['rTotal','rMax','rFinalRate','rActual','rMissing','rAllocated','rBefore','refund'].forEach(id=>$(id).textContent='—');$('rAllocationFormula').textContent='';clearMessages();$('total').focus();}
+$('calculateBtn').addEventListener('click',calculate); $('resetBtn').addEventListener('click',resetAll);
+document.querySelectorAll('input').forEach(input=>input.addEventListener('keydown',e=>{if(e.key==='Enter')calculate();}));
+</script>
+</body>
+</html>
