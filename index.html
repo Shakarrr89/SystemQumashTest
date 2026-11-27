@@ -541,37 +541,45 @@ body.locked>*:not(#gate){display:none!important}
 
 <script>
 (function(){
-  var API='https://cfwoicjexgexczryekmc.supabase.co', KEY='sb_publishable_NBJurc0mupUENq3_gLKdsg_tRVglAg2', AUTH_KEY='girfan-auth';
+  var API='https://cfwoicjexgexczryekmc.supabase.co', KEY='sb_publishable_NBJurc0mupUENq3_gLKdsg_tRVglAg2', AUTH_KEY='girfan-auth', APP_KEY='heda-fin-v2';
   var $=function(id){return document.getElementById(id)};
   var gate=$('gate'), form=$('gate-form'), em=$('g-email'), pw=$('g-pass'), btn=$('gate-login'), msg=$('gate-msg'), eye=$('g-eye');
   var sess=null, ready=false, saveT=null, isAdmin=false;
   var rawSet=Storage.prototype.setItem, rawRemove=Storage.prototype.removeItem;
+  var nowS=function(){return Math.floor(Date.now()/1000)};
 
   function setMsg(m){msg.textContent=m||''}
   function busy(b){btn.disabled=b;btn.textContent=b?'…':'Sign in'}
   function friendly(e){var m=(e&&e.message)||String(e);
     if(/invalid login/i.test(m))return 'Wrong email or password.';
     if(/email not confirmed/i.test(m))return 'This account is not confirmed. Ask the administrator.';
-    if(/failed to fetch|network/i.test(m))return 'No connection. Check your internet and try again.';
+    if(/failed to fetch|networkerror|load failed/i.test(m))return 'No connection. Check your internet and try again.';
     return m}
+  function showLogin(m){form.style.display='';setMsg(m);busy(false);gate.classList.remove('hide')}
 
+  function readStored(){try{return JSON.parse(localStorage.getItem(AUTH_KEY)||'null')}catch(e){return null}}
   function storeSess(s){sess=s;if(s)rawSet.call(localStorage,AUTH_KEY,JSON.stringify(s));else rawRemove.call(localStorage,AUTH_KEY)}
-  function setSess(j){storeSess({access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at||(Math.floor(Date.now()/1000)+(j.expires_in||3600)),user:j.user})}
+  function setSess(j){storeSess({access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at||(nowS()+(j.expires_in||3600)),user:j.user||(sess&&sess.user)})}
 
   async function parse(r){var t=await r.text();try{return t?JSON.parse(t):null}catch(e){return t}}
-  async function authCall(path,body,token){
+  async function authCall(path,body,tok){
     var h={'apikey':KEY,'Content-Type':'application/json'};
-    if(token)h['Authorization']='Bearer '+token;
+    if(tok)h['Authorization']='Bearer '+tok;
     var r=await fetch(API+'/auth/v1'+path,{method:'POST',headers:h,body:JSON.stringify(body||{})});
     var j=await parse(r);
-    if(!r.ok)throw new Error((j&&(j.error_description||j.msg||j.message||j.error))||('HTTP '+r.status));
+    if(!r.ok){var e=new Error((j&&(j.error_description||j.msg||j.message||j.error))||('HTTP '+r.status));e.status=r.status;throw e}
     return j;
   }
   async function token(){
+    var st=readStored();
+    if(st&&st.refresh_token&&(!sess||(st.expires_at||0)>(sess.expires_at||0)))sess=st;
     if(!sess)return null;
-    if(sess.expires_at-60<Math.floor(Date.now()/1000)){
-      var j=await authCall('/token?grant_type=refresh_token',{refresh_token:sess.refresh_token});
-      setSess(j);
+    if((sess.expires_at||0)-60<nowS()){
+      try{setSess(await authCall('/token?grant_type=refresh_token',{refresh_token:sess.refresh_token}))}
+      catch(e){
+        if(e.status&&e.status>=400&&e.status<500){storeSess(null);throw new Error('Your session ended. Please sign in again.')}
+        throw e;
+      }
     }
     return sess.access_token;
   }
@@ -583,7 +591,7 @@ body.locked>*:not(#gate){display:none!important}
     if(opts.prefer)h['Prefer']=opts.prefer;
     var r=await fetch(API+'/rest/v1/'+path,{method:opts.method||'GET',headers:h,body:opts.body?JSON.stringify(opts.body):undefined});
     var j=await parse(r);
-    if(!r.ok)throw new Error((j&&(j.message||j.hint))||('HTTP '+r.status));
+    if(!r.ok){var e=new Error((j&&(j.message||j.hint))||('HTTP '+r.status));e.status=r.status;throw e}
     return j;
   }
 
@@ -616,7 +624,26 @@ body.locked>*:not(#gate){display:none!important}
     }
   }
 
-  function mk(label,fn){var b=document.createElement('button');b.textContent=label;b.onclick=fn;return b}
+  function fillProfile(fullName,email){
+    try{
+      var d=JSON.parse(localStorage.getItem(APP_KEY)||'{}');
+      d.user=d.user||{};
+      d.user.email=email;
+      if(fullName)d.user.name=fullName;
+      else if(!d.user.name)d.user.name=email.split('@')[0];
+      rawSet.call(localStorage,APP_KEY,JSON.stringify(d));
+    }catch(e){}
+  }
+
+  window.gUser={name:'',email:''};
+  window.gAcct=function(){
+    var u=window.gUser||{name:'',email:''};
+    var esc=function(s){return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+    return '<section class="card pad mb"><h2>'+(isAdmin?'بەڕێوەبەر · Admin':'هەژمار · Account')+'</h2>'+
+      '<div class="row sb wrap mt"><div><b style="font-size:15px">'+esc(u.name)+'</b><div class="sub" dir="ltr">'+esc(u.email)+'</div></div>'+
+      '<div class="row wrap">'+(isAdmin?'<button class="btn sm" onclick="gAdmin()">بەڕێوەبەر · Admin</button>':'')+
+      '<button class="btn sm r" onclick="gSignOut()">چوونەدەرەوە · Sign out</button></div></div></section>';
+  };
 
   function unlock(){
     ready=true;
@@ -625,19 +652,20 @@ body.locked>*:not(#gate){display:none!important}
     var s=document.createElement('script');
     s.textContent=document.getElementById('app-src').textContent;
     document.body.appendChild(s);
-    var bar=document.createElement('div');bar.id='gbar';
-    if(isAdmin)bar.appendChild(mk('Admin',openAdmin));
-    bar.appendChild(mk('Sign out',signOut));
-    document.body.appendChild(bar);
   }
 
   async function enter(){
-    var rows=await rest('profiles?select=role&id=eq.'+sess.user.id);
-    if(!rows||!rows.length)throw new Error('No profile for this account. Ask the administrator.');
-    isAdmin=rows[0].role==='admin';
+    var rows=await rest('profiles?select=role,email,full_name&id=eq.'+sess.user.id);
+    if(!rows||!rows.length){var e=new Error('No profile for this account. Ask the administrator.');e.noProfile=true;throw e}
+    var p=rows[0];
+    isAdmin=p.role==='admin';
+    var email=sess.user.email||p.email||'';
+    window.gUser={name:p.full_name||email.split('@')[0],email:email};
     await hydrate();
+    fillProfile(p.full_name,email);
     rest('profiles?id=eq.'+sess.user.id,{method:'PATCH',prefer:'return=minimal',body:{last_seen_at:new Date().toISOString()}}).catch(function(){});
     unlock();
+    queue();
   }
 
   async function openAdmin(){
@@ -647,22 +675,26 @@ body.locked>*:not(#gate){display:none!important}
     var card=document.createElement('div');card.className='gpanel';
     var h=document.createElement('h2');h.textContent='Users';card.appendChild(h);
     var tbl=document.createElement('table');card.appendChild(tbl);
-    var close=mk('Close',function(){m.style.display='none'});close.className='gclose';card.appendChild(close);
+    var close=document.createElement('button');close.textContent='Close';close.className='gclose';
+    close.onclick=function(){m.style.display='none'};
+    card.appendChild(close);
     m.appendChild(card);m.style.display='flex';
+    m.onclick=function(e){if(e.target===m)m.style.display='none'};
     try{
-      var rows=await rest('profiles?select=email,role,created_at,last_seen_at,finance_snapshots(updated_at)&order=created_at.desc');
+      var rows=await rest('profiles?select=email,full_name,role,created_at,last_seen_at,finance_snapshots(updated_at)&order=created_at.desc');
       var fmt=function(x){return x?new Date(x).toLocaleString():'—'};
       var head=document.createElement('tr');
-      ['Email','Role','Last seen','Data saved'].forEach(function(t){var th=document.createElement('th');th.textContent=t;head.appendChild(th)});
+      ['Email','Name','Role','Last seen','Data saved'].forEach(function(t){var th=document.createElement('th');th.textContent=t;head.appendChild(th)});
       tbl.appendChild(head);
       rows.forEach(function(row){
         var s=row.finance_snapshots;var sv=Array.isArray(s)?s[0]:s;
         var tr=document.createElement('tr');
-        [row.email,row.role,fmt(row.last_seen_at),fmt(sv&&sv.updated_at)].forEach(function(v){var td=document.createElement('td');td.textContent=v||'—';tr.appendChild(td)});
+        [row.email,row.full_name,row.role,fmt(row.last_seen_at),fmt(sv&&sv.updated_at)].forEach(function(v){var td=document.createElement('td');td.textContent=v||'—';tr.appendChild(td)});
         tbl.appendChild(tr);
       });
     }catch(e){tbl.textContent=e.message}
   }
+  window.gAdmin=function(){openAdmin()};
 
   async function signOut(){
     if(saveT){clearTimeout(saveT);saveT=null;saveNow()}
@@ -671,6 +703,7 @@ body.locked>*:not(#gate){display:none!important}
     clearHeda();
     location.reload();
   }
+  window.gSignOut=function(){signOut()};
 
   eye.addEventListener('click',function(){
     var show=pw.type==='password';
@@ -686,24 +719,27 @@ body.locked>*:not(#gate){display:none!important}
     if(!email||!pass){setMsg('Enter your email and password.');return}
     busy(true);
     try{
-      var j=await authCall('/token?grant_type=password',{email:email,password:pass});
-      setSess(j);
+      setSess(await authCall('/token?grant_type=password',{email:email,password:pass}));
       await enter();
     }catch(err){
-      storeSess(null);
+      if(!sess||err.noProfile)storeSess(null);
       setMsg(friendly(err));
       busy(false);
     }
   });
 
-  function showLogin(m){setMsg(m);busy(false);gate.classList.remove('hide')}
-
   async function boot(){
-    var saved=null;
-    try{saved=JSON.parse(localStorage.getItem(AUTH_KEY)||'null')}catch(e){}
+    var saved=readStored();
     if(saved&&saved.refresh_token){
-      storeSess(saved);
-      try{await enter();return}catch(e){storeSess(null);showLogin(friendly(e));return}
+      sess=saved;
+      form.style.display='none';
+      setMsg('…');
+      try{await enter();return}
+      catch(e){
+        if(e.noProfile||!sess)storeSess(null);
+        showLogin(friendly(e));
+        return;
+      }
     }
     showLogin('');
   }
@@ -1500,7 +1536,7 @@ async function exportXlsx(){if(!window.XLSX){toast(t('e_lib'),1);return}var D=re
  var out=XLSX.write(wb,{type:'array',bookType:'xlsx'});saveFile('girfan-report-'+scL()+'-'+D.from+'_'+D.to+'.xlsx',new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}))}
 /* ---------- USER ---------- */
 function pUser(){var s=S.set,P=pv||{accent:s.accent,card:s.card};
- return head()+'<h1 class="mb">'+t('user')+'</h1><div class="g2 mb"><section class="card pad"><h2>'+t('profile')+'</h2><div class="row mt">'+avatar(64)+'<div class="grow"><label style="margin-top:0">'+t('fullname')+'</label><input id="un" value="'+esc(S.user.name)+'" maxlength="50"></div></div><label>'+t('email')+'</label><input id="ue" type="email" value="'+esc(S.user.email)+'"><button class="btn p mt" data-a="sprof">'+t('save')+'</button>'+
+ return head()+'<h1 class="mb">'+t('user')+'</h1>'+(window.gAcct?window.gAcct():'')+'<div class="g2 mb"><section class="card pad"><h2>'+t('profile')+'</h2><div class="row mt">'+avatar(64)+'<div class="grow"><label style="margin-top:0">'+t('fullname')+'</label><input id="un" value="'+esc(S.user.name)+'" maxlength="50"></div></div><label>'+t('email')+'</label><input id="ue" type="email" value="'+esc(S.user.email)+'"><button class="btn p mt" data-a="sprof">'+t('save')+'</button>'+
  '<label>'+t('photo')+'</label><div class="row wrap"><label class="btn sm" style="margin:0;color:var(--text)"><input type="file" id="avf" accept="image/*" hidden>'+ic('dl')+t('photo_up')+'</label>'+(S.user.av&&S.user.av.img?'<button type="button" class="btn sm" data-a="avrm">'+t('photo_rm')+'</button>':'')+'</div>'+
  '</section>'+
  '<section class="card pad"><h2>'+t('appear')+'</h2><div class="chips mt">'+['light','dark','auto'].map(function(k){return'<button class="chip '+(s.theme===k?'on':'')+'" data-a="theme" data-v="'+k+'">'+t(k)+'</button>'}).join('')+'</div>'+
