@@ -754,6 +754,21 @@ body.locked>*:not(#gate){display:none!important}
   boot();
 })();
 </script>
+<script>
+(function(){
+  function show(m){
+    try{
+      var d=document.getElementById('errbox');
+      if(!d){d=document.createElement('div');d.id='errbox';
+        d.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483647;background:#7f1d1d;color:#fff;font:12px/1.4 monospace;padding:10px;border-radius:10px;direction:ltr;text-align:left;max-height:40vh;overflow:auto;white-space:pre-wrap';
+        document.body.appendChild(d)}
+      d.textContent+=m+'\n';
+    }catch(x){}
+  }
+  window.addEventListener('error',function(e){show('Error: '+(e.message||'')+(e.lineno?' (line '+e.lineno+')':''))});
+  window.addEventListener('unhandledrejection',function(e){show('Promise: '+((e.reason&&e.reason.message)||e.reason))});
+})();
+</script>
 <script type="text/plain" id="app-src">
 (function(){
 'use strict';
@@ -1415,9 +1430,4 @@ function pHome(){var he=hpEnd(),b=bals(he?S.tx.filter(function(x){return x.ts<=h
  '<div class="chips mb">'+['day','week','month','year'].map(function(p){return'<button class="chip '+(per===p?'on':'')+'" data-a="per" data-v="'+p+'">'+t(p)+'</button>'}).join('')+'</div>'+
  '<div class="g2 mb"><div class="card pad row">'+bub('#dc2626',ic('out'))+'<div><div class="m sm">'+t('exps')+'</div><div class="big e" style="font-size:24px;margin:2px 0">'+fm(sum(L,'exp'))+' <small class="m" style="font-size:11px;font-weight:500">'+BC()+'</small></div></div></div>'+
  '<div class="card pad row">'+bub('#059669',ic('in'))+'<div><div class="m sm">'+t('incs')+'</div><div class="big n" style="font-size:24px;margin:2px 0">'+fm(sum(L,'inc'))+' <small class="m" style="font-size:11px;font-weight:500">'+BC()+'</small></div></div></div></div>'+
- '<section class="card pad"><h2>'+t('recent')+'</h2><div class="mt">'+(rec.length?rec.map(function(x){return txRow(x)}).join(''):empty('🧾',t('notx')))+'</div></section>'}
-/* ---------- modal helpers ---------- */
-function openM(h){$('#dlg').classList.toggle('tall',h.indexOf('class="shb"')>=0);$('#dc').innerHTML=h;document.documentElement.classList.add('mo');if(!$('#dlg').open)$('#dlg').showModal();upDates($('#dc'))}
-function closeM(){['dlg','pks','dps','npd'].forEach(function(i){var d=$('#'+i);if(d&&d.open)d.close()})}
-function ask(msg,fn){pend=fn;openM('<h3>⚠️</h3><p>'+esc(msg)+'</p><div class="acts"><button class="btn" data-a="close">'+t('cancel')+'</button><button class="btn r" data-a="yes">'+t('yes')+'</button></div>')}
-function accOpts(sel){return ACC.map(function(a){return'<o
+ '<section class="card pad"><h2>'+t
