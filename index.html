@@ -440,26 +440,44 @@ dialog#npd .grab{margin:-12px -14px -10px;padding-top:12px}
 .cal .h.we span{background:color-mix(in srgb,var(--red) 14%,var(--card));color:var(--red)}
 .cal .h.tdy span{background:var(--accent);color:var(--on);box-shadow:0 6px 14px -8px var(--accent)}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js"></script>
 <style>
-#gate{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;background:#f5f7fb;font-family:'Noto Sans Arabic',Tahoma,Arial,sans-serif;color:#111827}
+#gate{--g-bg:#f5f7fb;--g-card:#ffffff;--g-text:#111827;--g-muted:#6b7280;--g-line:#e3e8f1;--g-accent:#2563eb;--g-field:#f9fafc;
+position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:24px;
+background:radial-gradient(900px 500px at 15% -10%,color-mix(in srgb,var(--g-accent) 18%,transparent),transparent 60%),radial-gradient(800px 500px at 110% 110%,color-mix(in srgb,var(--g-accent) 14%,transparent),transparent 60%),var(--g-bg);
+font-family:'Noto Sans Arabic',Tahoma,Arial,sans-serif;color:var(--g-text);box-sizing:border-box}
+@media (prefers-color-scheme:dark){#gate{--g-bg:#0d1220;--g-card:#151b2d;--g-text:#eef2fb;--g-muted:#9aa5bd;--g-line:#252d44;--g-field:#0f1527}}
 #gate.hide{display:none}
-#gate .gc,#adm .gc{background:#fff;border:1px solid #e5e9f2;border-radius:22px;padding:34px 28px;width:100%;max-width:360px;text-align:center}
-#gate .gl{width:56px;height:56px;margin:0 auto 14px;border-radius:16px;background:#2563eb;color:#fff;display:grid;place-items:center;font-size:30px;font-weight:800}
-#gate h1{font-size:26px;font-weight:800;margin:0;direction:ltr}
-#gate .gt{color:#6b7280;font-size:13px;margin:6px 0 18px}
-#gate input{display:block;width:100%;padding:12px 14px;margin:0 0 10px;border-radius:12px;border:1px solid #d1d5db;font:15px 'Noto Sans Arabic',Tahoma,Arial,sans-serif;direction:ltr}
-#gate .gm{color:#dc2626;font-size:12.5px;min-height:18px;margin:4px 0 10px;direction:ltr;word-break:break-word}
-#gate .gbtn{width:100%;padding:13px 18px;border-radius:12px;border:0;background:#2563eb;color:#fff;font:600 15px 'Noto Sans Arabic',Tahoma,Arial,sans-serif;cursor:pointer}
-#gate .gbtn:disabled{opacity:.5}
+#gate *{box-sizing:border-box}
+#gate .gcard{width:100%;max-width:380px;background:var(--g-card);border:1px solid var(--g-line);border-radius:24px;padding:36px 30px 26px;box-shadow:0 24px 60px -28px rgba(15,23,42,.35)}
+#gate .gbrand{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:22px}
+#gate .glogo{width:56px;height:56px;border-radius:16px;background:var(--g-accent);color:#fff;display:grid;place-items:center;font-size:28px;font-weight:800;box-shadow:0 10px 24px -10px var(--g-accent)}
+#gate .gname{font-size:24px;font-weight:800;direction:ltr;line-height:1}
+#gate .gtag{font-size:11.5px;color:var(--g-muted);margin-top:4px;direction:ltr;text-align:center}
+#gate .gh{font-size:17px;font-weight:700;text-align:center;margin:0 0 4px}
+#gate .gsub{font-size:12.5px;color:var(--g-muted);text-align:center;margin:0 0 22px;direction:ltr}
+#gate label{display:block;font-size:11.5px;color:var(--g-muted);font-weight:600;margin:14px 0 6px;direction:ltr}
+#gate .gfield{position:relative}
+#gate .gfield svg{position:absolute;inset-inline-start:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;fill:none;stroke:var(--g-muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#gate input{width:100%;padding:12px 40px 12px 40px;border:1px solid var(--g-line);border-radius:12px;background:var(--g-field);color:var(--g-text);font:15px 'Noto Sans Arabic',Tahoma,Arial,sans-serif;direction:ltr;text-align:start}
+#gate input:focus{outline:2px solid var(--g-accent);outline-offset:-1px}
+#gate .geye{position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--g-muted);padding:6px;border-radius:8px;cursor:pointer;display:grid;place-items:center}
+#gate .geye:hover{color:var(--g-accent)}
+#gate .geye svg{position:static;transform:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#gate .gerr{min-height:18px;margin:14px 0 0;font-size:12.5px;color:#dc2626;direction:ltr;text-align:center;word-break:break-word}
+#gate .gbtn{width:100%;margin-top:10px;padding:13px 18px;border:0;border-radius:13px;background:linear-gradient(135deg,var(--g-accent),color-mix(in srgb,var(--g-accent) 65%,#000));color:#fff;font:700 15px 'Noto Sans Arabic',Tahoma,Arial,sans-serif;cursor:pointer;box-shadow:0 12px 24px -12px var(--g-accent);transition:transform .15s,filter .15s}
+#gate .gbtn:hover{filter:brightness(1.05)}
+#gate .gbtn:active{transform:translateY(1px)}
+#gate .gbtn:disabled{opacity:.6;cursor:default}
+#gate .gfoot{font-size:11px;color:var(--g-muted);text-align:center;margin:20px 0 0;direction:ltr}
 body.locked>*:not(#gate){display:none!important}
 #gbar{position:fixed;bottom:10px;inset-inline-start:10px;z-index:9000;display:flex;gap:6px}
 #gbar button,#adm button{font:600 11.5px 'Noto Sans Arabic',Tahoma,Arial,sans-serif;padding:7px 12px;border-radius:10px;border:1px solid #d1d5db;background:#fff;color:#111827;cursor:pointer}
 #adm{position:fixed;inset:0;z-index:9500;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.45)}
-#adm .gc{max-width:760px;max-height:85vh;overflow:auto;text-align:start}
+#adm .gpanel{background:#fff;color:#111827;border:1px solid #e5e9f2;border-radius:22px;padding:24px;width:100%;max-width:760px;max-height:85vh;overflow:auto}
+#adm h2{font-size:17px;margin:0 0 12px}
 #adm table{width:100%;border-collapse:collapse;font-size:12.5px;direction:ltr}
 #adm th,#adm td{padding:8px 6px;border-bottom:1px solid #e5e9f2;text-align:start}
-#adm .gbtn{margin-top:14px}
+#adm .gclose{margin-top:14px}
 </style>
 </head>
 <body class="locked">
@@ -471,15 +489,25 @@ body.locked>*:not(#gate){display:none!important}
 <dialog id="dps"><div class="grab" aria-hidden="true"></div><div id="dpc" class="dpp" style="border:0;padding:0;margin:0"></div></dialog>
 <div id="toasts"></div>
 <div id="gate">
- <form class="gc" id="gate-form">
-  <div class="gl">G</div>
-  <h1>Girfan</h1>
-  <p class="gt">چوونەژوورەوە · Sign in</p>
-  <input id="g-email" type="email" placeholder="Email" autocomplete="username" required>
-  <input id="g-pass" type="password" placeholder="Password" autocomplete="current-password" required>
-  <p id="gate-msg" class="gm"></p>
-  <button id="gate-login" type="submit" class="gbtn">Sign in</button>
- </form>
+ <div class="gcard">
+  <div class="gbrand">
+   <div class="glogo">G</div>
+   <div><div class="gname">Girfan</div><div class="gtag">Personal Finance</div></div>
+  </div>
+  <h1 class="gh">چوونەژوورەوە</h1>
+  <p class="gsub">Sign in to your account</p>
+  <form id="gate-form" novalidate>
+   <label for="g-email">Email</label>
+   <div class="gfield"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><input id="g-email" type="email" autocomplete="username" placeholder="name@example.com" required></div>
+   <label for="g-pass">Password</label>
+   <div class="gfield"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><input id="g-pass" type="password" autocomplete="current-password" placeholder="••••••••" required>
+    <button type="button" class="geye" id="g-eye" aria-label="Show password"><svg class="eye-on" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+   </div>
+   <p id="gate-msg" class="gerr" role="alert"></p>
+   <button id="gate-login" type="submit" class="gbtn">Sign in</button>
+  </form>
+  <p class="gfoot">Accounts are created by the administrator</p>
+ </div>
 </div>
 <svg width="0" height="0" style="position:absolute"><clipPath id="hc"><path d="M48 0V48H0z"/></clipPath>
 <symbol id="grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
@@ -513,23 +541,61 @@ body.locked>*:not(#gate){display:none!important}
 
 <script>
 (function(){
-  var SB_URL='https://cfwoicjexgexczryekmc.supabase.co';
-  var SB_KEY='sb_publishable_NBJurc0mupUENq3_gLKdsg_tRVglAg2';
-  var gate=document.getElementById('gate'),msg=document.getElementById('gate-msg'),btn=document.getElementById('gate-login'),form=document.getElementById('gate-form');
+  var API='https://cfwoicjexgexczryekmc.supabase.co', KEY='sb_publishable_NBJurc0mupUENq3_gLKdsg_tRVglAg2', AUTH_KEY='girfan-auth';
+  var $=function(id){return document.getElementById(id)};
+  var gate=$('gate'), form=$('gate-form'), em=$('g-email'), pw=$('g-pass'), btn=$('gate-login'), msg=$('gate-msg'), eye=$('g-eye');
+  var sess=null, ready=false, saveT=null, isAdmin=false;
+  var rawSet=Storage.prototype.setItem, rawRemove=Storage.prototype.removeItem;
+
   function setMsg(m){msg.textContent=m||''}
-  if(!window.supabase){setMsg('Could not load the login library. Check your internet connection and refresh.');return}
-  var sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
-  var user=null,ready=false,saveT=null,isAdmin=false;
-  var rawSet=Storage.prototype.setItem,rawRemove=Storage.prototype.removeItem;
+  function busy(b){btn.disabled=b;btn.textContent=b?'…':'Sign in'}
+  function friendly(e){var m=(e&&e.message)||String(e);
+    if(/invalid login/i.test(m))return 'Wrong email or password.';
+    if(/email not confirmed/i.test(m))return 'This account is not confirmed. Ask the administrator.';
+    if(/failed to fetch|network/i.test(m))return 'No connection. Check your internet and try again.';
+    return m}
+
+  function storeSess(s){sess=s;if(s)rawSet.call(localStorage,AUTH_KEY,JSON.stringify(s));else rawRemove.call(localStorage,AUTH_KEY)}
+  function setSess(j){storeSess({access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at||(Math.floor(Date.now()/1000)+(j.expires_in||3600)),user:j.user})}
+
+  async function parse(r){var t=await r.text();try{return t?JSON.parse(t):null}catch(e){return t}}
+  async function authCall(path,body,token){
+    var h={'apikey':KEY,'Content-Type':'application/json'};
+    if(token)h['Authorization']='Bearer '+token;
+    var r=await fetch(API+'/auth/v1'+path,{method:'POST',headers:h,body:JSON.stringify(body||{})});
+    var j=await parse(r);
+    if(!r.ok)throw new Error((j&&(j.error_description||j.msg||j.message||j.error))||('HTTP '+r.status));
+    return j;
+  }
+  async function token(){
+    if(!sess)return null;
+    if(sess.expires_at-60<Math.floor(Date.now()/1000)){
+      var j=await authCall('/token?grant_type=refresh_token',{refresh_token:sess.refresh_token});
+      setSess(j);
+    }
+    return sess.access_token;
+  }
+  async function rest(path,opts){
+    opts=opts||{};
+    var t=await token();
+    var h={'apikey':KEY,'Content-Type':'application/json'};
+    if(t)h['Authorization']='Bearer '+t;
+    if(opts.prefer)h['Prefer']=opts.prefer;
+    var r=await fetch(API+'/rest/v1/'+path,{method:opts.method||'GET',headers:h,body:opts.body?JSON.stringify(opts.body):undefined});
+    var j=await parse(r);
+    if(!r.ok)throw new Error((j&&(j.message||j.hint))||('HTTP '+r.status));
+    return j;
+  }
 
   function heda(){var o={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('heda-')===0)o[k]=localStorage.getItem(k)}return o}
   function clearHeda(){Object.keys(heda()).forEach(function(k){rawRemove.call(localStorage,k)})}
-  function mk(label,fn){var b=document.createElement('button');b.textContent=label;b.onclick=fn;return b}
-
+  function push(data){
+    return rest('finance_snapshots?on_conflict=user_id',{method:'POST',prefer:'resolution=merge-duplicates,return=minimal',
+      body:{user_id:sess.user.id,data:data,updated_at:new Date().toISOString()}});
+  }
   function saveNow(){
-    if(!user||!ready)return Promise.resolve();
-    return sb.from('finance_snapshots').upsert({user_id:user.id,data:heda(),updated_at:new Date().toISOString()})
-      .then(function(r){if(r.error)console.error('Save failed:',r.error.message)});
+    if(!sess||!ready)return;
+    push(heda()).catch(function(e){console.error('Save failed:',e.message)});
   }
   function queue(){if(!ready)return;clearTimeout(saveT);saveT=setTimeout(function(){saveT=null;saveNow()},1500)}
   Storage.prototype.setItem=function(k,v){rawSet.call(this,k,v);if(this===localStorage&&String(k).indexOf('heda-')===0)queue()};
@@ -539,20 +605,18 @@ body.locked>*:not(#gate){display:none!important}
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')flush()});
 
   async function hydrate(){
-    var r=await sb.from('finance_snapshots').select('data').eq('user_id',user.id).maybeSingle();
-    if(r.error)throw r.error;
-    var cloud=r.data&&r.data.data;
+    var rows=await rest('finance_snapshots?select=data&user_id=eq.'+sess.user.id);
+    var cloud=rows&&rows[0]&&rows[0].data;
     if(cloud&&Object.keys(cloud).length){
       clearHeda();
       Object.keys(cloud).forEach(function(k){rawSet.call(localStorage,k,cloud[k])});
     }else{
       var local=heda();
-      if(Object.keys(local).length){
-        var up=await sb.from('finance_snapshots').upsert({user_id:user.id,data:local,updated_at:new Date().toISOString()});
-        if(up.error)throw up.error;
-      }
+      if(Object.keys(local).length)await push(local);
     }
   }
+
+  function mk(label,fn){var b=document.createElement('button');b.textContent=label;b.onclick=fn;return b}
 
   function unlock(){
     ready=true;
@@ -568,13 +632,11 @@ body.locked>*:not(#gate){display:none!important}
   }
 
   async function enter(){
-    setMsg('…');
-    var p=await sb.from('profiles').select('role').eq('id',user.id).maybeSingle();
-    if(p.error)throw p.error;
-    if(!p.data)throw new Error('No profile for this account. Ask the admin.');
+    var rows=await rest('profiles?select=role&id=eq.'+sess.user.id);
+    if(!rows||!rows.length)throw new Error('No profile for this account. Ask the administrator.');
+    isAdmin=rows[0].role==='admin';
     await hydrate();
-    isAdmin=p.data.role==='admin';
-    sb.from('profiles').update({last_seen_at:new Date().toISOString()}).eq('id',user.id).then(function(){});
+    rest('profiles?id=eq.'+sess.user.id,{method:'PATCH',prefer:'return=minimal',body:{last_seen_at:new Date().toISOString()}}).catch(function(){});
     unlock();
   }
 
@@ -582,53 +644,68 @@ body.locked>*:not(#gate){display:none!important}
     var m=document.getElementById('adm');
     if(!m){m=document.createElement('div');m.id='adm';document.body.appendChild(m)}
     m.textContent='';
-    var card=document.createElement('div');card.className='gc';
+    var card=document.createElement('div');card.className='gpanel';
     var h=document.createElement('h2');h.textContent='Users';card.appendChild(h);
     var tbl=document.createElement('table');card.appendChild(tbl);
-    var close=mk('Close',function(){m.style.display='none'});close.className='gbtn';card.appendChild(close);
+    var close=mk('Close',function(){m.style.display='none'});close.className='gclose';card.appendChild(close);
     m.appendChild(card);m.style.display='flex';
-    var r=await sb.from('profiles').select('email,role,created_at,last_seen_at,finance_snapshots(updated_at)').order('created_at',{ascending:false});
-    if(r.error){tbl.textContent=r.error.message;return}
-    var fmt=function(x){return x?new Date(x).toLocaleString():'—'};
-    var head=document.createElement('tr');
-    ['Email','Role','Last seen','Data saved'].forEach(function(t){var th=document.createElement('th');th.textContent=t;head.appendChild(th)});
-    tbl.appendChild(head);
-    r.data.forEach(function(row){
-      var s=row.finance_snapshots;var sv=Array.isArray(s)?s[0]:s;
-      var tr=document.createElement('tr');
-      [row.email,row.role,fmt(row.last_seen_at),fmt(sv&&sv.updated_at)].forEach(function(v){var td=document.createElement('td');td.textContent=v||'—';tr.appendChild(td)});
-      tbl.appendChild(tr);
-    });
+    try{
+      var rows=await rest('profiles?select=email,role,created_at,last_seen_at,finance_snapshots(updated_at)&order=created_at.desc');
+      var fmt=function(x){return x?new Date(x).toLocaleString():'—'};
+      var head=document.createElement('tr');
+      ['Email','Role','Last seen','Data saved'].forEach(function(t){var th=document.createElement('th');th.textContent=t;head.appendChild(th)});
+      tbl.appendChild(head);
+      rows.forEach(function(row){
+        var s=row.finance_snapshots;var sv=Array.isArray(s)?s[0]:s;
+        var tr=document.createElement('tr');
+        [row.email,row.role,fmt(row.last_seen_at),fmt(sv&&sv.updated_at)].forEach(function(v){var td=document.createElement('td');td.textContent=v||'—';tr.appendChild(td)});
+        tbl.appendChild(tr);
+      });
+    }catch(e){tbl.textContent=e.message}
   }
 
   async function signOut(){
-    if(saveT){clearTimeout(saveT);saveT=null;await saveNow()}
-    await sb.auth.signOut();
+    if(saveT){clearTimeout(saveT);saveT=null;saveNow()}
+    try{if(sess)await authCall('/logout',{},sess.access_token)}catch(e){}
+    storeSess(null);
     clearHeda();
     location.reload();
   }
 
+  eye.addEventListener('click',function(){
+    var show=pw.type==='password';
+    pw.type=show?'text':'password';
+    eye.setAttribute('aria-label',show?'Hide password':'Show password');
+    eye.style.color=show?'var(--g-accent)':'';
+  });
+
   form.addEventListener('submit',async function(e){
     e.preventDefault();
-    btn.disabled=true;setMsg('…');
+    setMsg('');
+    var email=em.value.trim(), pass=pw.value;
+    if(!email||!pass){setMsg('Enter your email and password.');return}
+    busy(true);
     try{
-      var r=await sb.auth.signInWithPassword({email:document.getElementById('g-email').value.trim(),password:document.getElementById('g-pass').value});
-      if(r.error)throw r.error;
-      user=r.data.user;
+      var j=await authCall('/token?grant_type=password',{email:email,password:pass});
+      setSess(j);
       await enter();
     }catch(err){
-      setMsg(err.message||String(err));
-      btn.disabled=false;
+      storeSess(null);
+      setMsg(friendly(err));
+      busy(false);
     }
   });
 
+  function showLogin(m){setMsg(m);busy(false);gate.classList.remove('hide')}
+
   async function boot(){
-    try{
-      var s=await sb.auth.getSession();
-      if(s.error)throw s.error;
-      if(s.data.session){user=s.data.session.user;await enter();return}
-    }catch(e){setMsg(e.message||String(e))}
-    btn.disabled=false;
+    var saved=null;
+    try{saved=JSON.parse(localStorage.getItem(AUTH_KEY)||'null')}catch(e){}
+    if(saved&&saved.refresh_token){
+      storeSess(saved);
+      try{await enter();return}catch(e){storeSess(null);showLogin(friendly(e));return}
+    }
+    showLogin('');
   }
   boot();
 })();
