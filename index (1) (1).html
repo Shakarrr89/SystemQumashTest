@@ -440,7 +440,7 @@ dialog#npd .grab{margin:-12px -14px -10px;padding-top:12px}
 .cal .h.we span{background:color-mix(in srgb,var(--red) 14%,var(--card));color:var(--red)}
 .cal .h.tdy span{background:var(--accent);color:var(--on);box-shadow:0 6px 14px -8px var(--accent)}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js"></script>
 <style>
 #gate{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;background:#f5f7fb;font-family:'Noto Sans Arabic',Tahoma,Arial,sans-serif;color:#111827}
 #gate.hide{display:none}
@@ -448,11 +448,10 @@ dialog#npd .grab{margin:-12px -14px -10px;padding-top:12px}
 #gate .gl{width:56px;height:56px;margin:0 auto 14px;border-radius:16px;background:#2563eb;color:#fff;display:grid;place-items:center;font-size:30px;font-weight:800}
 #gate h1{font-size:26px;font-weight:800;margin:0;direction:ltr}
 #gate .gt{color:#6b7280;font-size:13px;margin:6px 0 18px}
-#gate .gm{color:#dc2626;font-size:12.5px;min-height:18px;margin:0 0 14px;direction:ltr;word-break:break-word}
-#gate .gb-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px 18px;border-radius:12px;border:1px solid #d1d5db;background:#fff;color:#111827;font:600 15px 'Noto Sans Arabic',Tahoma,Arial,sans-serif;cursor:pointer}
-#gate .gb-google[hidden]{display:none}
-#gate .gb-google:disabled{opacity:.5}
-#gate .gbadge{width:22px;height:22px;border-radius:50%;background:#4285f4;color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px}
+#gate input{display:block;width:100%;padding:12px 14px;margin:0 0 10px;border-radius:12px;border:1px solid #d1d5db;font:15px 'Noto Sans Arabic',Tahoma,Arial,sans-serif;direction:ltr}
+#gate .gm{color:#dc2626;font-size:12.5px;min-height:18px;margin:4px 0 10px;direction:ltr;word-break:break-word}
+#gate .gbtn{width:100%;padding:13px 18px;border-radius:12px;border:0;background:#2563eb;color:#fff;font:600 15px 'Noto Sans Arabic',Tahoma,Arial,sans-serif;cursor:pointer}
+#gate .gbtn:disabled{opacity:.5}
 body.locked>*:not(#gate){display:none!important}
 #gbar{position:fixed;bottom:10px;inset-inline-start:10px;z-index:9000;display:flex;gap:6px}
 #gbar button,#adm button{font:600 11.5px 'Noto Sans Arabic',Tahoma,Arial,sans-serif;padding:7px 12px;border-radius:10px;border:1px solid #d1d5db;background:#fff;color:#111827;cursor:pointer}
@@ -472,13 +471,15 @@ body.locked>*:not(#gate){display:none!important}
 <dialog id="dps"><div class="grab" aria-hidden="true"></div><div id="dpc" class="dpp" style="border:0;padding:0;margin:0"></div></dialog>
 <div id="toasts"></div>
 <div id="gate">
- <div class="gc">
+ <form class="gc" id="gate-form">
   <div class="gl">G</div>
   <h1>Girfan</h1>
   <p class="gt">چوونەژوورەوە · Sign in</p>
-  <p id="gate-msg" class="gm">Loading…</p>
-  <button id="gate-login" class="gb-google" hidden><span class="gbadge">G</span> Continue with Google</button>
- </div>
+  <input id="g-email" type="email" placeholder="Email" autocomplete="username" required>
+  <input id="g-pass" type="password" placeholder="Password" autocomplete="current-password" required>
+  <p id="gate-msg" class="gm"></p>
+  <button id="gate-login" type="submit" class="gbtn">Sign in</button>
+ </form>
 </div>
 <svg width="0" height="0" style="position:absolute"><clipPath id="hc"><path d="M48 0V48H0z"/></clipPath>
 <symbol id="grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
@@ -514,14 +515,15 @@ body.locked>*:not(#gate){display:none!important}
 (function(){
   var SB_URL='https://cfwoicjexgexczryekmc.supabase.co';
   var SB_KEY='sb_publishable_NBJurc0mupUENq3_gLKdsg_tRVglAg2';
-  var sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  var gate=document.getElementById('gate'),msg=document.getElementById('gate-msg'),btn=document.getElementById('gate-login');
+  var gate=document.getElementById('gate'),msg=document.getElementById('gate-msg'),btn=document.getElementById('gate-login'),form=document.getElementById('gate-form');
+  function setMsg(m){msg.textContent=m||''}
+  if(!window.supabase){setMsg('Could not load the login library. Check your internet connection and refresh.');return}
+  var sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
   var user=null,ready=false,saveT=null,isAdmin=false;
   var rawSet=Storage.prototype.setItem,rawRemove=Storage.prototype.removeItem;
 
   function heda(){var o={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('heda-')===0)o[k]=localStorage.getItem(k)}return o}
   function clearHeda(){Object.keys(heda()).forEach(function(k){rawRemove.call(localStorage,k)})}
-  function setMsg(m){msg.textContent=m||''}
   function mk(label,fn){var b=document.createElement('button');b.textContent=label;b.onclick=fn;return b}
 
   function saveNow(){
@@ -544,7 +546,6 @@ body.locked>*:not(#gate){display:none!important}
       clearHeda();
       Object.keys(cloud).forEach(function(k){rawSet.call(localStorage,k,cloud[k])});
     }else{
-      // first login: upload data already saved on this device
       var local=heda();
       if(Object.keys(local).length){
         var up=await sb.from('finance_snapshots').upsert({user_id:user.id,data:local,updated_at:new Date().toISOString()});
@@ -567,11 +568,11 @@ body.locked>*:not(#gate){display:none!important}
   }
 
   async function enter(){
-    btn.hidden=true;setMsg('…');
-    await hydrate();
+    setMsg('…');
     var p=await sb.from('profiles').select('role').eq('id',user.id).maybeSingle();
     if(p.error)throw p.error;
-    if(!p.data)throw new Error('This account is not allowed to use Girfan.');
+    if(!p.data)throw new Error('No profile for this account. Ask the admin.');
+    await hydrate();
     isAdmin=p.data.role==='admin';
     sb.from('profiles').update({last_seen_at:new Date().toISOString()}).eq('id',user.id).then(function(){});
     unlock();
@@ -589,9 +590,9 @@ body.locked>*:not(#gate){display:none!important}
     var r=await sb.from('profiles').select('email,role,created_at,last_seen_at,finance_snapshots(updated_at)').order('created_at',{ascending:false});
     if(r.error){tbl.textContent=r.error.message;return}
     var fmt=function(x){return x?new Date(x).toLocaleString():'—'};
-    var thead=document.createElement('tr');
-    ['Email','Role','Last seen','Data saved'].forEach(function(t){var th=document.createElement('th');th.textContent=t;thead.appendChild(th)});
-    tbl.appendChild(thead);
+    var head=document.createElement('tr');
+    ['Email','Role','Last seen','Data saved'].forEach(function(t){var th=document.createElement('th');th.textContent=t;head.appendChild(th)});
+    tbl.appendChild(head);
     r.data.forEach(function(row){
       var s=row.finance_snapshots;var sv=Array.isArray(s)?s[0]:s;
       var tr=document.createElement('tr');
@@ -607,29 +608,27 @@ body.locked>*:not(#gate){display:none!important}
     location.reload();
   }
 
-  btn.onclick=function(){
-    btn.disabled=true;
-    sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}})
-      .then(function(r){if(r.error){btn.disabled=false;setMsg(r.error.message)}});
-  };
-
-  function urlError(){
-    var q=new URLSearchParams(location.search).get('error_description')||new URLSearchParams(location.hash.replace(/^#/,'')).get('error_description');
-    return q?q.replace(/\+/g,' '):'';
-  }
-  function showLogin(m){setMsg(m);btn.hidden=false;btn.disabled=false}
+  form.addEventListener('submit',async function(e){
+    e.preventDefault();
+    btn.disabled=true;setMsg('…');
+    try{
+      var r=await sb.auth.signInWithPassword({email:document.getElementById('g-email').value.trim(),password:document.getElementById('g-pass').value});
+      if(r.error)throw r.error;
+      user=r.data.user;
+      await enter();
+    }catch(err){
+      setMsg(err.message||String(err));
+      btn.disabled=false;
+    }
+  });
 
   async function boot(){
-    var err=urlError();
-    if(err)history.replaceState(null,'',location.pathname);
     try{
       var s=await sb.auth.getSession();
       if(s.error)throw s.error;
       if(s.data.session){user=s.data.session.user;await enter();return}
-      showLogin(err);
-    }catch(e){
-      showLogin(e.message||String(e));
-    }
+    }catch(e){setMsg(e.message||String(e))}
+    btn.disabled=false;
   }
   boot();
 })();
