@@ -447,6 +447,9 @@ background:radial-gradient(900px 500px at 15% -10%,color-mix(in srgb,var(--g-acc
 font-family:'Noto Sans Arabic',Tahoma,Arial,sans-serif;color:var(--g-text);box-sizing:border-box}
 @media (prefers-color-scheme:dark){#gate{--g-bg:#0d1220;--g-card:#151b2d;--g-text:#eef2fb;--g-muted:#9aa5bd;--g-line:#252d44;--g-field:#0f1527}}
 #gate.hide{display:none}
+#gate.boot .gcard{visibility:hidden}
+#gate.boot::after{content:"";width:36px;height:36px;border-radius:50%;border:3px solid var(--g-line);border-top-color:var(--g-accent);animation:gspin .8s linear infinite}
+@keyframes gspin{to{transform:rotate(360deg)}}
 #gate *{box-sizing:border-box}
 #gate .gcard{width:100%;max-width:380px;background:var(--g-card);border:1px solid var(--g-line);border-radius:24px;padding:36px 30px 26px;box-shadow:0 24px 60px -28px rgba(15,23,42,.35)}
 #gate .gbrand{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:22px}
@@ -555,7 +558,7 @@ body.locked>*:not(#gate){display:none!important}
     if(/email not confirmed/i.test(m))return 'This account is not confirmed. Ask the administrator.';
     if(/failed to fetch|networkerror|load failed/i.test(m))return 'No connection. Check your internet and try again.';
     return m}
-  function showLogin(m){form.style.display='';setMsg(m);busy(false);gate.classList.remove('hide')}
+  function showLogin(m){form.style.display='';setMsg(m);busy(false);gate.classList.remove('boot');gate.classList.remove('hide')}
 
   function readStored(){try{return JSON.parse(localStorage.getItem(AUTH_KEY)||'null')}catch(e){return null}}
   function storeSess(s){sess=s;if(s)rawSet.call(localStorage,AUTH_KEY,JSON.stringify(s));else rawRemove.call(localStorage,AUTH_KEY)}
@@ -655,7 +658,9 @@ body.locked>*:not(#gate){display:none!important}
   }
 
   async function enter(){
-    var rows=await rest('profiles?select=role,email,full_name&id=eq.'+sess.user.id);
+    var rows;
+    try{rows=await rest('profiles?select=role,email,full_name&id=eq.'+sess.user.id)}
+    catch(err){rows=await rest('profiles?select=role,email&id=eq.'+sess.user.id)}
     if(!rows||!rows.length){var e=new Error('No profile for this account. Ask the administrator.');e.noProfile=true;throw e}
     var p=rows[0];
     isAdmin=p.role==='admin';
@@ -681,7 +686,9 @@ body.locked>*:not(#gate){display:none!important}
     m.appendChild(card);m.style.display='flex';
     m.onclick=function(e){if(e.target===m)m.style.display='none'};
     try{
-      var rows=await rest('profiles?select=email,full_name,role,created_at,last_seen_at,finance_snapshots(updated_at)&order=created_at.desc');
+      var rows;
+      try{rows=await rest('profiles?select=email,full_name,role,created_at,last_seen_at,finance_snapshots(updated_at)&order=created_at.desc')}
+      catch(err){rows=await rest('profiles?select=email,role,created_at,last_seen_at,finance_snapshots(updated_at)&order=created_at.desc')}
       var fmt=function(x){return x?new Date(x).toLocaleString():'—'};
       var head=document.createElement('tr');
       ['Email','Name','Role','Last seen','Data saved'].forEach(function(t){var th=document.createElement('th');th.textContent=t;head.appendChild(th)});
@@ -733,7 +740,8 @@ body.locked>*:not(#gate){display:none!important}
     if(saved&&saved.refresh_token){
       sess=saved;
       form.style.display='none';
-      setMsg('…');
+      gate.classList.add('boot');
+      setMsg('');
       try{await enter();return}
       catch(e){
         if(e.noProfile||!sess)storeSess(null);
@@ -3280,7 +3288,7 @@ $('#npd').addEventListener('click',function(e){var r=this.getBoundingClientRect(
 $('#npd').addEventListener('close',function(){if(!$('#dlg').open&&!$('#pks').open&&!$('#dps').open)document.documentElement.classList.remove('mo');NP=null});
 
 /* init */
-norm();runRec();notifs();render();idbAll().then(function(){render()});budgetCheck();if(!S.impDone)setTimeout(offerImport,600);
+norm();runRec();notifs();render();idbAll().then(function(){render()});budgetCheck();S.impDone=1;
 
 /* ===== every emoji -> an icon drawn in the app's own style ===== */
 var EMR=/(?:[\u{1F300}-\u{1FAFF}][\uFE0F\u{1F3FB}-\u{1F3FF}]?(?:\u200D[\u{1F300}-\u{1FAFF}\u2640\u2642]\uFE0F?)*|[\u2705\u2795\u23F9\u23F0\u23F3\u2B50\u26FD\u2615\u26BD]\uFE0F?|[\u2708\u26A0]\uFE0F?|\u21A9\uFE0F)/gu,
